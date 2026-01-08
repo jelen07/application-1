@@ -20,7 +20,7 @@ use function func_num_args, strcasecmp;
  * @property array $parameters
  * @property array $post
  * @property array $files
- * @property string|null $method
+ * @property ?string $method
  */
 final class Request
 {

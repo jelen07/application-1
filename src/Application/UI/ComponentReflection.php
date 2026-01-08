@@ -30,7 +30,7 @@ final class ComponentReflection extends \ReflectionClass
 
 	/**
 	 * Returns array of class properties that are public and have attribute #[Persistent] or #[Parameter] or annotation @persistent.
-	 * @return array<string, array{def: mixed, type: string, since: ?class-string}>
+	 * @return array<string, array{def: mixed, type: string, since?: ?class-string}>
 	 */
 	public function getParameters(): array
 	{
@@ -78,7 +78,7 @@ final class ComponentReflection extends \ReflectionClass
 
 	/**
 	 * Returns array of persistent properties. They are public and have attribute #[Persistent] or annotation @persistent.
-	 * @return array<string, array{def: mixed, type: string, since: class-string}>
+	 * @return array<string, array{def: mixed, type: string, since: ?class-string}>
 	 */
 	public function getPersistentParams(): array
 	{
@@ -115,6 +115,9 @@ final class ComponentReflection extends \ReflectionClass
 	}
 
 
+	/**
+	 * @return string[] names of public properties with #[TemplateVariable] attribute
+	 */
 	public function getTemplateVariables(Control $control): array
 	{
 		$res = [];

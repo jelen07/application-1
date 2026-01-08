@@ -46,6 +46,11 @@ abstract class Control extends Component implements Renderable
 	}
 
 
+	/**
+	 * @template T of Template
+	 * @param ?class-string<T>  $class
+	 * @return ($class is null ? Template : T)
+	 */
 	protected function createTemplate(?string $class = null): Template
 	{
 		$class ??= $this->formatTemplateClass();
@@ -54,13 +59,17 @@ abstract class Control extends Component implements Renderable
 	}
 
 
+	/** @return ?class-string<Template> */
 	public function formatTemplateClass(): ?string
 	{
 		return $this->checkTemplateClass(preg_replace('#Control$#', '', static::class) . 'Template');
 	}
 
 
-	/** @internal */
+	/**
+	 * @internal
+	 * @return ?class-string<Template>
+	 */
 	protected function checkTemplateClass(string $class): ?string
 	{
 		if (!class_exists($class)) {
