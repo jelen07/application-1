@@ -17,8 +17,8 @@ use Nette;
  */
 final class CallbackResponse implements Nette\Application\Response
 {
-	/** @var callable */
-	private $callback;
+	/** @var \Closure(Nette\Http\IRequest, Nette\Http\IResponse): void */
+	private \Closure $callback;
 
 
 	/**
@@ -26,7 +26,7 @@ final class CallbackResponse implements Nette\Application\Response
 	 */
 	public function __construct(callable $callback)
 	{
-		$this->callback = $callback;
+		$this->callback = $callback(...);
 	}
 
 

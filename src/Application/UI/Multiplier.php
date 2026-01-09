@@ -17,13 +17,16 @@ use Nette;
  */
 final class Multiplier extends Component
 {
-	/** @var callable */
-	private $factory;
+	/** @var \Closure(string, self): Nette\ComponentModel\IComponent */
+	private \Closure $factory;
 
 
+	/**
+	 * @param callable(string, self): Nette\ComponentModel\IComponent  $factory
+	 */
 	public function __construct(callable $factory)
 	{
-		$this->factory = $factory;
+		$this->factory = $factory(...);
 	}
 
 
