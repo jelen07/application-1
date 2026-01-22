@@ -1,8 +1,127 @@
 parameters:
-	level: 5
+	level: 8
 
 	paths:
 		- src
+		- tests/types
+
+	excludePaths:
+		- src/compatibility.php
+		- src/compatibility-intf.php
+		- src/Bridges/ApplicationLatte/UIMacros.php
+		- src/Bridges/ApplicationLatte/SnippetBridge.php
+
+	ignoreErrors:
+		# Latte 2/3 compatibility - classes/methods/properties differ between versions
+		-
+			paths:
+				- src/Bridges/ApplicationLatte/TemplateFactory.php
+				- src/Bridges/ApplicationLatte/UIRuntime.php
+			identifiers:
+				- class.notFound
+				- method.notFound
+				- property.notFound
+				- arguments.count
+
+		# Latte 2 compatibility - TemplateFactory has Latte 2/3 dual support
+		-
+			path: src/Bridges/ApplicationLatte/TemplateFactory.php
+			identifiers:
+				- if.alwaysFalse
+				- function.alreadyNarrowedType
+				- return.type
+
+		# Latte 2/3 compatibility - LatteExtension supports both Latte versions
+		-
+			path: src/Bridges/ApplicationDI/LatteExtension.php
+			identifiers:
+				- class.notFound
+				- method.notFound
+				- property.nonObject
+				- if.alwaysFalse
+
+		# Nette DI config access pattern - $config is array|object depending on DI version
+		-
+			identifier: property.nonObject
+			paths:
+				- src/Bridges/ApplicationDI/ApplicationExtension.php
+				- src/Bridges/ApplicationDI/RoutingExtension.php
+
+		# Intentional pattern for factory methods and fluent interfaces
+		-
+			identifier: new.static
+
+		# RoutingPanel uses Closure::bindTo to access private methods of RouteList
+		-
+			identifier: method.notFound
+			path: src/Bridges/ApplicationTracy/RoutingPanel.php
+
+		# ErrorPresenter: $code is used in the required template file
+		-
+			identifier: closure.unusedUse
+			path: src/Application/ErrorPresenter.php
+
+		# UIExtension: Latte filters/functions have varying callable signatures
+		-
+			identifier: missingType.callable
+			path: src/Bridges/ApplicationLatte/UIExtension.php
+
+		# DI extensions use Definition::addSetup()/getResultDefinition() from ServiceDefinition subclass
+		-
+			identifier: method.notFound
+			paths:
+				- src/Bridges/ApplicationDI/ApplicationExtension.php
+				- src/Bridges/ApplicationDI/LatteExtension.php
+
+		# Presenter readonly properties are assigned via injectPrimary() - intentional Nette DI pattern
+		-
+			identifier: property.uninitializedReadonly
+			path: src/Application/UI/Presenter.php
+		-
+			identifier: property.readOnlyAssignNotInConstructor
+			path: src/Application/UI/Presenter.php
+
+		# Latte 3 node compatibility - properties/methods may differ between minor versions
+		-
+			paths:
+				- src/Bridges/ApplicationLatte/Nodes/ControlNode.php
+				- src/Bridges/ApplicationLatte/Nodes/LinkNode.php
+				- src/Bridges/ApplicationLatte/Nodes/NNonceNode.php
+				- src/Bridges/ApplicationLatte/Nodes/SnippetNode.php
+				- src/Bridges/ApplicationLatte/Nodes/LinkBaseNode.php
+				- src/Bridges/ApplicationLatte/Nodes/IfCurrentNode.php
+				- src/Bridges/ApplicationLatte/Nodes/TemplatePrintNode.php
+			identifiers:
+				- method.nonObject
+				- property.nonObject
+				- property.notFound
+				- argument.type
+				- variable.undefined
+				- postDec.type
+				- generator.valueType
+				- booleanAnd.leftAlwaysFalse
+				- function.alreadyNarrowedType
+
+		# SnippetRuntime: Latte Block class and Renderable interface compatibility
+		-
+			path: src/Bridges/ApplicationLatte/SnippetRuntime.php
+			identifiers:
+				- class.notFound
+				- property.notFound
+				- method.notFound
+				- offsetAccess.nonArray
+
+		# Nette Forms compatibility - methods differ between versions
+		-
+			identifier: method.notFound
+			path: src/Application/UI/Form.php
+
+		# TemplateFactory::createTemplate() accepts optional $class parameter via phpDoc
+		-
+			identifier: arguments.count
+			paths:
+				- src/Application/UI/Presenter.php
+				- src/Application/UI/Control.php
 
 includes:
 	- phpstan-baseline.neon

@@ -112,7 +112,7 @@ final class AccessPolicy
 			throw new \LogicException('Requires(actions) used by ' . Reflection::toString($this->element) . ' is allowed only in presenter.');
 		}
 
-		if (!in_array($this->presenter->getAction(), $attribute->actions, strict: true)) {
+		if (!in_array($this->presenter->getAction(), $attribute->actions ?? [], strict: true)) {
 			$this->presenter->error("Action '{$this->presenter->getAction()}' is not allowed by " . Reflection::toString($this->element));
 		}
 	}
@@ -124,7 +124,7 @@ final class AccessPolicy
 			$this->presenter->allowedMethods = []; // bypass Presenter::checkHttpMethod()
 		}
 
-		$allowed = array_map(strtoupper(...), $attribute->methods);
+		$allowed = array_map(strtoupper(...), $attribute->methods ?? []);
 		$method = $this->presenter->getHttpRequest()->getMethod();
 
 		if ($allowed !== ['*'] && !in_array($method, $allowed, strict: true)) {

@@ -1,0 +1,5 @@
+parameters:
+	ignoreErrors:
+		-
+			identifier: arrayValues.list
+			path: src/Application/MicroPresenter.php

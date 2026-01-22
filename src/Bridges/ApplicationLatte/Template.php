@@ -39,7 +39,7 @@ abstract class Template implements Nette\Application\UI\Template
 	public function render(?string $file = null, array $params = []): void
 	{
 		Nette\Utils\Arrays::toObject($params, $this);
-		$this->latte->render($file ?? $this->file, $this);
+		$this->latte->render($file ?? $this->file ?? '', $this);
 	}
 
 
@@ -50,7 +50,7 @@ abstract class Template implements Nette\Application\UI\Template
 	public function renderToString(?string $file = null, array $params = []): string
 	{
 		Nette\Utils\Arrays::toObject($params, $this);
-		return $this->latte->renderToString($file ?? $this->file, $this);
+		return $this->latte->renderToString($file ?? $this->file ?? '', $this);
 	}
 
 
@@ -59,7 +59,7 @@ abstract class Template implements Nette\Application\UI\Template
 	 */
 	public function __toString(): string
 	{
-		return $this->latte->renderToString($this->file, $this->getParameters());
+		return $this->latte->renderToString($this->file ?? '', $this->getParameters());
 	}
 
 
@@ -147,7 +147,7 @@ abstract class Template implements Nette\Application\UI\Template
 	 * Prevents unserialization.
 	 * @param  array<mixed>  $_
 	 */
-	final public function __unserialize($_)
+	final public function __unserialize(array $_)
 	{
 		throw new Nette\NotImplementedException('Object unserialization is not supported by class ' . static::class);
 	}

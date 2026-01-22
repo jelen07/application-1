@@ -298,7 +298,8 @@ abstract class Component extends Nette\ComponentModel\Container implements Signa
 			$args = func_num_args() < 3 && is_array($args)
 				? $args
 				: array_slice(func_get_args(), 1);
-			return $this->getPresenter()->getLinkGenerator()->link($destination, $args, $this, 'link');
+			$presenter = $this->getPresenter();
+			return (string) $presenter->getLinkGenerator()->link($destination, $args, $this, 'link');
 
 		} catch (InvalidLinkException $e) {
 			return $this->getPresenter()->handleInvalidLink($e);
@@ -328,14 +329,15 @@ abstract class Component extends Nette\ComponentModel\Container implements Signa
 	 */
 	public function isLinkCurrent(?string $destination = null, $args = []): bool
 	{
+		$presenter = $this->getPresenter();
 		if ($destination !== null) {
 			$args = func_num_args() < 3 && is_array($args)
 				? $args
 				: array_slice(func_get_args(), 1);
-			$this->getPresenter()->getLinkGenerator()->createRequest($this, $destination, $args, 'test');
+			$presenter->getLinkGenerator()->createRequest($this, $destination, $args, 'test');
 		}
 
-		return $this->getPresenter()->getLastCreatedRequestFlag('current');
+		return $presenter->getLastCreatedRequestFlag('current');
 	}
 
 
@@ -353,7 +355,7 @@ abstract class Component extends Nette\ComponentModel\Container implements Signa
 			: array_slice(func_get_args(), 1);
 		$presenter = $this->getPresenter();
 		$presenter->saveGlobalState();
-		$presenter->redirectUrl($presenter->getLinkGenerator()->link($destination, $args, $this, 'redirect'));
+		$presenter->redirectUrl((string) $presenter->getLinkGenerator()->link($destination, $args, $this, 'redirect'));
 	}
 
 
@@ -371,7 +373,7 @@ abstract class Component extends Nette\ComponentModel\Container implements Signa
 			: array_slice(func_get_args(), 1);
 		$presenter = $this->getPresenter();
 		$presenter->redirectUrl(
-			$presenter->getLinkGenerator()->link($destination, $args, $this, 'redirect'),
+			(string) $presenter->getLinkGenerator()->link($destination, $args, $this, 'redirect'),
 			Nette\Http\IResponse::S301_MovedPermanently,
 		);
 	}

@@ -22,7 +22,7 @@ final class UIRuntime
 	use Nette\StaticClass;
 
 	/** @param  array<string, array<mixed>>  $blocks */
-	public static function initialize(Latte\Runtime\Template $template, &$parentName, array $blocks): void
+	public static function initialize(Latte\Runtime\Template $template, mixed &$parentName, array $blocks): void
 	{
 		$providers = $template->global;
 		$blocks = array_filter(array_keys($blocks), fn(string $s): bool => $s[0] !== '_');

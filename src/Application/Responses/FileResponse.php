@@ -74,7 +74,7 @@ final class FileResponse implements Nette\Application\Response
 				. '; filename*=utf-8\'\'' . rawurlencode($this->name),
 		);
 
-		$filesize = $length = filesize($this->file);
+		$filesize = $length = (int) filesize($this->file);
 		$handle = fopen($this->file, 'r');
 		if (!$handle) {
 			throw new Nette\Application\BadRequestException("Cannot open file: '{$this->file}'.");
@@ -109,7 +109,12 @@ final class FileResponse implements Nette\Application\Response
 
 		$httpResponse->setHeader('Content-Length', (string) $length);
 		while (!feof($handle) && $length > 0) {
-			echo $s = fread($handle, min(4_000_000, $length));
+			$s = fread($handle, (int) min(4_000_000, $length));
+			if ($s === false) {
+				break;
+			}
+
+			echo $s;
 			$length -= strlen($s);
 		}
 
