@@ -46,7 +46,7 @@ final class LinkGenerator
 		$parts = self::parseDestination($destination);
 		$args = $parts['args'] ?? $args;
 		$request = $this->createRequest($component, $parts['path'] . ($parts['signal'] ? '!' : ''), $args, $mode ?? 'link');
-		$relative = $mode === 'link' && !$parts['absolute'] && !$component?->getPresenter()->absoluteUrls;
+		$relative = $mode === 'link' && !$parts['absolute'] && !$component?->getPresenter()?->absoluteUrls;
 		return $mode === 'forward' || $mode === 'test'
 			? null
 			: $this->requestToUrl($request, $relative) . $parts['fragment'];
@@ -76,7 +76,9 @@ final class LinkGenerator
 		if (($component && !$component instanceof UI\Presenter) || str_ends_with($destination, '!')) {
 			[$cname, $signal] = Helpers::splitName(rtrim($destination, '!'));
 			if ($cname !== '') {
+				assert($component !== null);
 				$component = $component->getComponent(strtr($cname, ':', '-'));
+				assert($component instanceof UI\Component);
 			}
 
 			if ($signal === '') {
@@ -100,7 +102,7 @@ final class LinkGenerator
 				throw new \LogicException("Presenter must be specified in '$destination'.");
 			}
 			$action = $path === 'this' ? $refPresenter->getAction() : $action;
-			$presenter = $refPresenter->getName();
+			$presenter = (string) $refPresenter->getName();
 			$presenterClass = $refPresenter::class;
 
 		} else {
@@ -110,7 +112,7 @@ final class LinkGenerator
 					throw new UI\InvalidLinkException("Missing presenter name in '$destination'.");
 				}
 			} elseif ($refPresenter) { // relative
-				[$module, , $sep] = Helpers::splitName($refPresenter->getName());
+				[$module, , $sep] = Helpers::splitName((string) $refPresenter->getName());
 				$presenter = $module . $sep . $presenter;
 			}
 
@@ -123,6 +125,7 @@ final class LinkGenerator
 
 		// PROCESS SIGNAL ARGUMENTS
 		if (isset($signal)) { // $component must be StatePersistent
+			assert($component instanceof UI\Component);
 			$reflection = new UI\ComponentReflection($component::class);
 			if ($signal === 'this') { // means "no signal"
 				$signal = '';
@@ -158,7 +161,7 @@ final class LinkGenerator
 		}
 
 		// PROCESS ARGUMENTS
-		if (is_subclass_of($presenterClass, UI\Presenter::class)) {
+		if ($presenterClass !== null && is_subclass_of($presenterClass, UI\Presenter::class)) {
 			if ($action === '') {
 				$action = UI\Presenter::DefaultAction;
 			}
@@ -178,7 +181,7 @@ final class LinkGenerator
 			if ($method = $reflection->getActionRenderMethod($action)) {
 				$this->validateLinkTarget($refPresenter, $method, "action '$presenter:$action'", $mode);
 
-				UI\ParameterConverter::toParameters($method, $args, $path === 'this' ? $refPresenter->getParameters() : [], $missing);
+				UI\ParameterConverter::toParameters($method, $args, $path === 'this' && $refPresenter ? $refPresenter->getParameters() : [], $missing);
 
 			} elseif (array_key_exists(0, $args)) {
 				throw new UI\InvalidLinkException("Unable to pass parameters to action '$presenter:$action', missing corresponding method $presenterClass::{$presenterClass::formatRenderMethod($action)}().");
@@ -218,12 +221,12 @@ final class LinkGenerator
 			$args[UI\Presenter::ActionKey] = $action;
 		}
 
-		if (!empty($signal)) {
+		if (!empty($signal) && $component instanceof UI\Component) {
 			$args[UI\Presenter::SignalKey] = $component->getParameterId($signal);
-			$current = $current && $args[UI\Presenter::SignalKey] === $refPresenter->getParameter(UI\Presenter::SignalKey);
+			$current = $current && $args[UI\Presenter::SignalKey] === $refPresenter?->getParameter(UI\Presenter::SignalKey);
 		}
 
-		if (($mode === 'redirect' || $mode === 'forward') && $refPresenter->hasFlashSession()) {
+		if (($mode === 'redirect' || $mode === 'forward') && $refPresenter && $refPresenter->hasFlashSession()) {
 			$flashKey = $refPresenter->getParameter(UI\Presenter::FlashKey);
 			$args[UI\Presenter::FlashKey] = is_string($flashKey) && $flashKey !== '' ? $flashKey : null;
 		}
@@ -246,6 +249,7 @@ final class LinkGenerator
 
 		if (!empty($matches['query'])) {
 			parse_str(substr($matches['query'], 1), $args);
+			/** @var array<string, mixed> $args */
 		}
 
 		return [
@@ -301,7 +305,7 @@ final class LinkGenerator
 	): void
 	{
 		if ($mode !== 'forward' && !(new UI\AccessPolicy($element))->isLinkable()) {
-			throw new UI\InvalidLinkException("Link to forbidden $message from '{$presenter->getName()}:{$presenter->getAction()}'.");
+			throw new UI\InvalidLinkException("Link to forbidden $message from '{$presenter?->getName()}:{$presenter?->getAction()}'.");
 		} elseif ($presenter?->invalidLinkMode
 			&& (UI\ComponentReflection::parseAnnotation($element, 'deprecated') || $element->getAttributes(Attributes\Deprecated::class))
 		) {

@@ -299,10 +299,11 @@ abstract class Component extends Nette\ComponentModel\Container implements Signa
 				? $args
 				: array_slice(func_get_args(), 1);
 			$presenter = $this->getPresenter();
+			assert($presenter !== null);
 			return (string) $presenter->getLinkGenerator()->link($destination, $args, $this, 'link');
 
 		} catch (InvalidLinkException $e) {
-			return $this->getPresenter()->handleInvalidLink($e);
+			return $presenter->handleInvalidLink($e);
 		}
 	}
 
@@ -330,6 +331,7 @@ abstract class Component extends Nette\ComponentModel\Container implements Signa
 	public function isLinkCurrent(?string $destination = null, $args = []): bool
 	{
 		$presenter = $this->getPresenter();
+		assert($presenter !== null);
 		if ($destination !== null) {
 			$args = func_num_args() < 3 && is_array($args)
 				? $args
@@ -354,6 +356,7 @@ abstract class Component extends Nette\ComponentModel\Container implements Signa
 			? $args
 			: array_slice(func_get_args(), 1);
 		$presenter = $this->getPresenter();
+		assert($presenter !== null);
 		$presenter->saveGlobalState();
 		$presenter->redirectUrl((string) $presenter->getLinkGenerator()->link($destination, $args, $this, 'redirect'));
 	}
@@ -372,6 +375,7 @@ abstract class Component extends Nette\ComponentModel\Container implements Signa
 			? $args
 			: array_slice(func_get_args(), 1);
 		$presenter = $this->getPresenter();
+		assert($presenter !== null);
 		$presenter->redirectUrl(
 			(string) $presenter->getLinkGenerator()->link($destination, $args, $this, 'redirect'),
 			Nette\Http\IResponse::S301_MovedPermanently,

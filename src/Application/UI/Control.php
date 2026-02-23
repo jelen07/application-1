@@ -54,7 +54,9 @@ abstract class Control extends Component implements Renderable
 	protected function createTemplate(?string $class = null): Template
 	{
 		$class ??= $this->formatTemplateClass();
-		$templateFactory = $this->templateFactory ?? $this->getPresenter()->getTemplateFactory();
+		$presenter = $this->getPresenter();
+		assert($presenter !== null);
+		$templateFactory = $this->templateFactory ?? $presenter->getTemplateFactory();
 		return $templateFactory->createTemplate($this, $class);
 	}
 
@@ -103,14 +105,16 @@ abstract class Control extends Component implements Renderable
 	public function flashMessage(string|\stdClass|\Stringable $message, string $type = 'info'): \stdClass
 	{
 		$id = $this->getParameterId('flash');
+		$presenter = $this->getPresenter();
+		assert($presenter !== null);
 		$flash = $message instanceof \stdClass ? $message : (object) [
 			'message' => $message,
 			'type' => $type,
 		];
-		$messages = $this->getPresenter()->getFlashSession()->get($id);
+		$messages = $presenter->getFlashSession()->get($id);
 		$messages[] = $flash;
 		$this->getTemplate()->flashes = $messages;
-		$this->getPresenter()->getFlashSession()->set($id, $messages);
+		$presenter->getFlashSession()->set($id, $messages);
 		return $flash;
 	}
 

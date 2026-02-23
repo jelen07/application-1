@@ -11,6 +11,13 @@ parameters:
 		- src/Bridges/ApplicationLatte/UIMacros.php
 		- src/Bridges/ApplicationLatte/SnippetBridge.php
 
+	fileExtensions:
+		- php
+		- phtml
+
+	# Cross-version compatible project (Latte 2/3, Tracy 2/3) — some rules only match with specific versions
+	reportUnmatchedIgnoredErrors: false
+
 	ignoreErrors:
 		# Latte 2/3 compatibility - classes/methods/properties differ between versions
 		-
@@ -39,6 +46,43 @@ parameters:
 				- method.notFound
 				- property.nonObject
 				- if.alwaysFalse
+
+		# Latte 2/3 compatibility - Template::addFilter(?string) and version_compare
+		-
+			path: src/Bridges/ApplicationLatte/Template.php
+			identifiers:
+				- argument.type
+				- if.alwaysFalse
+
+		# Latte 3 node compatibility - properties/methods may differ between minor versions
+		-
+			paths:
+				- src/Bridges/ApplicationLatte/Nodes/ControlNode.php
+				- src/Bridges/ApplicationLatte/Nodes/LinkNode.php
+				- src/Bridges/ApplicationLatte/Nodes/NNonceNode.php
+				- src/Bridges/ApplicationLatte/Nodes/SnippetNode.php
+				- src/Bridges/ApplicationLatte/Nodes/LinkBaseNode.php
+				- src/Bridges/ApplicationLatte/Nodes/IfCurrentNode.php
+				- src/Bridges/ApplicationLatte/Nodes/TemplatePrintNode.php
+			identifiers:
+				- method.nonObject
+				- property.nonObject
+				- property.notFound
+				- argument.type
+				- variable.undefined
+				- postDec.type
+				- generator.valueType
+				- booleanAnd.leftAlwaysFalse
+				- function.alreadyNarrowedType
+
+		# SnippetRuntime: Latte Block class and Renderable interface compatibility
+		-
+			path: src/Bridges/ApplicationLatte/SnippetRuntime.php
+			identifiers:
+				- class.notFound
+				- property.notFound
+				- method.notFound
+				- offsetAccess.nonArray
 
 		# Nette DI config access pattern - $config is array|object depending on DI version
 		-
@@ -81,36 +125,6 @@ parameters:
 			identifier: property.readOnlyAssignNotInConstructor
 			path: src/Application/UI/Presenter.php
 
-		# Latte 3 node compatibility - properties/methods may differ between minor versions
-		-
-			paths:
-				- src/Bridges/ApplicationLatte/Nodes/ControlNode.php
-				- src/Bridges/ApplicationLatte/Nodes/LinkNode.php
-				- src/Bridges/ApplicationLatte/Nodes/NNonceNode.php
-				- src/Bridges/ApplicationLatte/Nodes/SnippetNode.php
-				- src/Bridges/ApplicationLatte/Nodes/LinkBaseNode.php
-				- src/Bridges/ApplicationLatte/Nodes/IfCurrentNode.php
-				- src/Bridges/ApplicationLatte/Nodes/TemplatePrintNode.php
-			identifiers:
-				- method.nonObject
-				- property.nonObject
-				- property.notFound
-				- argument.type
-				- variable.undefined
-				- postDec.type
-				- generator.valueType
-				- booleanAnd.leftAlwaysFalse
-				- function.alreadyNarrowedType
-
-		# SnippetRuntime: Latte Block class and Renderable interface compatibility
-		-
-			path: src/Bridges/ApplicationLatte/SnippetRuntime.php
-			identifiers:
-				- class.notFound
-				- property.notFound
-				- method.notFound
-				- offsetAccess.nonArray
-
 		# Nette Forms compatibility - methods differ between versions
 		-
 			identifier: method.notFound
@@ -122,6 +136,93 @@ parameters:
 			paths:
 				- src/Application/UI/Presenter.php
 				- src/Application/UI/Control.php
+
+		# MicroPresenter uses duck typing for template objects and nullable container
+		-
+			path: src/Application/MicroPresenter.php
+			identifiers:
+				- argument.type
+				- argument.templateType
+				- method.notFound
+				- method.nonObject
+				- property.notFound
+				- return.type
+
+		# PresenterFactory/Callback: `new $class` returns object, not IPresenter (verified at runtime)
+		-
+			identifier: return.type
+			paths:
+				- src/Application/PresenterFactory.php
+				- src/Bridges/ApplicationDI/PresenterFactoryCallback.php
+
+		# PresenterFactory: defensive type checks after regex validation — always true but kept for safety
+		-
+			path: src/Application/PresenterFactory.php
+			identifiers:
+				- function.alreadyNarrowedType
+				- booleanAnd.alwaysTrue
+				- identical.alwaysTrue
+
+		# Route/RouteList: defensive type checks — always true after prior validation
+		-
+			identifier: function.alreadyNarrowedType
+			paths:
+				- src/Application/Routers/Route.php
+				- src/Application/Routers/RouteList.php
+		-
+			identifier: nullCoalesce.offset
+			path: src/Application/Routers/Route.php
+
+		# ComponentReflection: cache reference pattern causes always-true/unreachable false positives
+		-
+			path: src/Application/UI/ComponentReflection.php
+			identifiers:
+				- notIdentical.alwaysTrue
+				- deadCode.unreachable
+				- booleanAnd.rightAlwaysTrue
+
+		# ComponentReflection: static methods exist on Presenter subclass, called via $class:: dynamic dispatch
+		-
+			path: src/Application/UI/ComponentReflection.php
+			identifiers:
+				- staticMethod.notFound
+				- method.notFound
+				- return.type
+
+		# Control::$template->flashes is set dynamically for flash messages
+		-
+			identifier: property.notFound
+			path: src/Application/UI/Control.php
+
+		# Presenter::detectedCsrf() redirect() throws AbortException, not InvalidLinkException
+		-
+			identifier: catch.neverThrown
+			path: src/Application/UI/Presenter.php
+
+		# Exception::$code cannot have native type in override, phpDoc int differs from parent mixed
+		-
+			identifier: property.phpDocType
+			path: src/Application/exceptions.php
+
+		# parse_str() native type is wider than actual query string result
+		-
+			identifier: varTag.nativeType
+			path: src/Application/LinkGenerator.php
+
+		# Tracy version_compare conditions and BlueScreen closure parameter counts
+		-
+			path: src/Bridges/ApplicationDI/ApplicationExtension.php
+			identifiers:
+				- booleanAnd.rightAlwaysTrue
+				- booleanAnd.leftAlwaysTrue
+				- arguments.count
+
+		# RoutingPanel::analyse() return type and ReflectionClass with runtime class-string
+		-
+			path: src/Bridges/ApplicationTracy/RoutingPanel.php
+			identifiers:
+				- return.type
+				- argument.type
 
 includes:
 	- phpstan-baseline.neon

@@ -56,7 +56,7 @@ final class ParameterConverter
 			}
 		}
 
-		return $res;
+		return array_values($res);
 	}
 
 

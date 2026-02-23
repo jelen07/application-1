@@ -85,22 +85,24 @@ final class FileResponse implements Nette\Application\Response
 			if (preg_match('#^bytes=(\d*)-(\d*)$#D', (string) $httpRequest->getHeader('Range'), $matches)) {
 				[, $start, $end] = $matches;
 				if ($start === '') {
-					$start = max(0, $filesize - $end);
+					$start = max(0, $filesize - (int) $end);
 					$end = $filesize - 1;
 
-				} elseif ($end === '' || $end > $filesize - 1) {
+				} elseif ($end === '' || (int) $end > $filesize - 1) {
 					$end = $filesize - 1;
 				}
 
-				if ($end < $start) {
+				if ((int) $end < (int) $start) {
 					$httpResponse->setCode(416); // requested range not satisfiable
 					return;
 				}
 
 				$httpResponse->setCode(206);
+				$start = (int) $start;
+				$end = (int) $end;
 				$httpResponse->setHeader('Content-Range', 'bytes ' . $start . '-' . $end . '/' . $filesize);
 				$length = $end - $start + 1;
-				fseek($handle, (int) $start);
+				fseek($handle, $start);
 
 			} else {
 				$httpResponse->setHeader('Content-Range', 'bytes 0-' . ($filesize - 1) . '/' . $filesize);
@@ -109,7 +111,7 @@ final class FileResponse implements Nette\Application\Response
 
 		$httpResponse->setHeader('Content-Length', (string) $length);
 		while (!feof($handle) && $length > 0) {
-			$s = fread($handle, (int) min(4_000_000, $length));
+			$s = fread($handle, max(1, (int) min(4_000_000, $length)));
 			if ($s === false) {
 				break;
 			}

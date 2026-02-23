@@ -78,8 +78,10 @@ final class SnippetRuntime
 		[$name, $obStarted] = array_pop($this->stack);
 		if ($this->nestingLevel > 0 && --$this->nestingLevel === 0) {
 			$content = ob_get_clean();
-			$this->payload ??= $this->control->getPresenter()->getPayload();
-			$this->payload->snippets[$this->control->getSnippetId($name)] = $content;
+			$this->payload ??= $this->control->getPresenter()?->getPayload();
+			if ($this->payload) {
+				$this->payload->snippets[$this->control->getSnippetId($name)] = $content;
+			}
 
 		} elseif ($obStarted) { // dynamic snippet wrapper or snippet area
 			ob_end_clean();

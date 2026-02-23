@@ -508,7 +508,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 			}
 		}
 
-		$file = strtr(Arrays::first($files), '/', DIRECTORY_SEPARATOR);
+		$file = strtr((string) Arrays::first($files), '/', DIRECTORY_SEPARATOR);
 		$this->error("Page not found. Missing template '$file'.");
 	}
 
@@ -531,7 +531,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 		}
 
 		if ($this->layout) {
-			$file = strtr(Arrays::first($files), '/', DIRECTORY_SEPARATOR);
+			$file = strtr((string) Arrays::first($files), '/', DIRECTORY_SEPARATOR);
 			throw new Nette\FileNotFoundException("Layout not found. Missing template '$file'.");
 		}
 
@@ -788,7 +788,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 		try {
 			$url = $this->linkGenerator->link(
 				$destination ?: $this->action,
-				$args + $this->getGlobalState() + $request->getParameters(),
+				$args + $this->getGlobalState() + ($request?->getParameters() ?? []),
 				$this,
 				'redirectX',
 			);

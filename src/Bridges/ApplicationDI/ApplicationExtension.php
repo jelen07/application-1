@@ -136,7 +136,7 @@ final class ApplicationExtension extends Nette\DI\CompilerExtension
 		$all = [];
 
 		foreach ($builder->findByType(Nette\Application\IPresenter::class) as $def) {
-			$all[$def->getType()] = $def;
+			$all[(string) $def->getType()] = $def;
 		}
 
 		$counter = 0;
@@ -152,11 +152,12 @@ final class ApplicationExtension extends Nette\DI\CompilerExtension
 			$def->addTag(Nette\DI\Extensions\InjectExtension::TagInject)
 				->setAutowired(false);
 
-			if (is_subclass_of($def->getType(), UI\Presenter::class) && $def instanceof Definitions\ServiceDefinition) {
+			$type = (string) $def->getType();
+			if (is_subclass_of($type, UI\Presenter::class) && $def instanceof Definitions\ServiceDefinition) {
 				$def->addSetup('$invalidLinkMode', [$this->invalidLinkMode]);
 			}
 
-			$this->compiler->addExportedType($def->getType());
+			$this->compiler->addExportedType($type);
 		}
 	}
 
@@ -192,7 +193,7 @@ final class ApplicationExtension extends Nette\DI\CompilerExtension
 
 		if ($config->scanComposer) {
 			$rc = new \ReflectionClass(ClassLoader::class);
-			$classFile = dirname($rc->getFileName()) . '/autoload_classmap.php';
+			$classFile = dirname((string) $rc->getFileName()) . '/autoload_classmap.php';
 			if (is_file($classFile)) {
 				$this->getContainerBuilder()->addDependency($classFile);
 				$classes = array_merge($classes, array_keys((fn($path) => require $path)($classFile)));
@@ -202,7 +203,8 @@ final class ApplicationExtension extends Nette\DI\CompilerExtension
 		$presenters = [];
 		foreach (array_unique($classes) as $class) {
 			if (
-				fnmatch($config->scanFilter, $class)
+				is_string($class)
+				&& fnmatch($config->scanFilter, $class)
 				&& class_exists($class)
 				&& ($rc = new \ReflectionClass($class))
 				&& $rc->implementsInterface(Nette\Application\IPresenter::class)
