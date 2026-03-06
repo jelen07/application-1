@@ -35,7 +35,7 @@ class SnippetAreaNode extends StatementNode
 	{
 		$node = $tag->node = new static;
 		$name = $tag->parser->parseUnquotedStringOrExpression();
-		if (
+		if ( // TODO?
 			$name instanceof Expression\ClassConstantFetchNode
 			&& $name->class instanceof Php\NameNode
 			&& $name->name instanceof Php\IdentifierNode
