@@ -34,7 +34,7 @@ abstract class Component extends Nette\ComponentModel\Container implements Signa
 
 
 	/**
-	 * Returns the presenter where this component belongs to.
+	 * Returns the presenter where this component belongs to. Throws if not attached.
 	 */
 	public function getPresenter(): ?Presenter
 	{
@@ -48,7 +48,7 @@ abstract class Component extends Nette\ComponentModel\Container implements Signa
 
 
 	/**
-	 * Returns the presenter where this component belongs to.
+	 * Returns the presenter where this component belongs to, or null if not attached.
 	 */
 	public function getPresenterIfExists(): ?Presenter
 	{

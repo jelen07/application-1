@@ -60,7 +60,7 @@ final class Request
 
 
 	/**
-	 * Retrieve the presenter name.
+	 * Returns the presenter name.
 	 */
 	public function getPresenterName(): string
 	{

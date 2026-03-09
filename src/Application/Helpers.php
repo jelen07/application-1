@@ -32,6 +32,7 @@ final class Helpers
 
 
 	/**
+	 * Returns all classes, parent classes, and traits used by the given class, keyed by name.
 	 * @return array<string, class-string>
 	 */
 	public static function getClassesAndTraits(string $class): array

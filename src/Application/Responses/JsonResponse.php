@@ -28,9 +28,6 @@ final class JsonResponse implements Nette\Application\Response
 	}
 
 
-	/**
-	 * Returns the MIME content type of a downloaded file.
-	 */
 	public function getContentType(): string
 	{
 		return $this->contentType;

@@ -134,9 +134,6 @@ abstract class Presenter extends Control implements Application\IPresenter
 	}
 
 
-	/**
-	 * Returns self.
-	 */
 	final public function getPresenter(): static
 	{
 		return $this;
@@ -165,6 +162,9 @@ abstract class Presenter extends Control implements Application\IPresenter
 	}
 
 
+	/**
+	 * Checks whether the current presenter belongs to the given module.
+	 */
 	public function isModuleCurrent(string $module): bool
 	{
 		$current = Helpers::splitName((string) $this->getName())[0];
@@ -172,6 +172,9 @@ abstract class Presenter extends Control implements Application\IPresenter
 	}
 
 
+	/**
+	 * Checks whether the current request was forwarded from another presenter or action.
+	 */
 	public function isForwarded(): bool
 	{
 		return $this->forwarded || ($this->request !== null && $this->request->isMethod($this->request::FORWARD));
@@ -286,6 +289,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 
 
 	/**
+	 * Called before action method. Override to run initialization common to all actions.
 	 * @return void
 	 */
 	protected function startup()
@@ -295,7 +299,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 
 
 	/**
-	 * Common render method.
+	 * Called before the view is rendered. Override to set up common template variables.
 	 * @return void
 	 */
 	protected function beforeRender()
@@ -304,13 +308,16 @@ abstract class Presenter extends Control implements Application\IPresenter
 
 
 	/**
-	 * Common render method.
+	 * Called after the view is rendered. Override for post-render processing.
 	 */
 	protected function afterRender(): void
 	{
 	}
 
 
+	/**
+	 * Called after the response is ready. Override for cleanup after request handling.
+	 */
 	protected function shutdown(Application\Response $response): void
 	{
 	}

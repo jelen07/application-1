@@ -64,7 +64,7 @@ final class ParameterConverter
 	 * Converts list of arguments to named parameters & check types.
 	 * @param  mixed[]  $args
 	 * @param  array<string, mixed>  $supplemental
-	 * @param  \ReflectionParameter[]  $missing arguments
+	 * @param  \ReflectionParameter[]|null  $missing  collects parameters with missing values
 	 * @throws InvalidLinkException
 	 * @internal
 	 */
